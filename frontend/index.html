@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EventHub - Find Amazing Events</title>
+    <link rel="stylesheet" href="assets/css/styles.css">
+    <link rel="stylesheet" href="assets/css/events.css">
+</head>
+<body>
+    <header>
+        <div class="container">
+            <div class="logo">
+                <h1>EventHub</h1>
+            </div>
+            <nav>
+                <ul>
+                    <li><a href="index.html" class="active">Home</a></li>
+                    <li><a href="#" id="login-status">Login</a></li>
+                    <li><a href="profile.html" id="profile-link" style="display: none;">My Profile</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <section class="hero">
+        <div class="container">
+            <h2>Discover Amazing Events</h2>
+            <p>Find and book the best events in your area</p>
+            <div class="search-bar">
+                <input type="text" placeholder="Search events...">
+                <select id="genre-filter">
+                    <option value="">All Genres</option>
+                    <option value="music">Music</option>
+                    <option value="sports">Sports</option>
+                    <option value="tech">Technology</option>
+                    <option value="art">Art & Culture</option>
+                    <option value="food">Food & Drinks</option>
+                </select>
+                <button>Search</button>
+            </div>
+        </div>
+    </section>
+
+    <section class="upcoming-events">
+        <div class="container">
+            <h2>Upcoming Events</h2>
+            <div class="event-grid" id="events-container">
+                <!-- Events will be dynamically loaded here -->
+                <!-- Example event card structure -->
+                <div class="event-card">
+                    <div class="event-banner">
+                        <img src="assets/images/sample-event.jpg" alt="Event name">
+                        <span class="event-date">MAR 25</span>
+                    </div>
+                    <div class="event-info">
+                        <h3>Music Festival 2025</h3>
+                        <p class="event-genre">Music</p>
+                        <p class="event-location">Central Park, New York</p>
+                        <a href="event-details.html?id=1" class="btn">View Details</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer>
+        <div class="container">
+            <p>&copy; 2025 EventHub. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script src="assets/js/main.js"></script>
+    <script src="assets/js/auth.js"></script>
+    <script src="assets/js/events.js"></script>
+</body>
+</html>
