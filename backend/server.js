@@ -66,7 +66,7 @@ app.get("/events", async (req, res) => {
     }
 });
 
-// Add or update an event (for day-to-day updates)
+// Add or update an event
 app.post("/events", async (req, res) => {
     const { eventId, name, date, day, ticketPrice, teamSize, genre, bannerUrl, description } = req.body;
     try {
@@ -87,9 +87,13 @@ app.post("/events", async (req, res) => {
     }
 });
 
-// Book an event
+// Book an event (only for logged-in users)
 app.post("/book", async (req, res) => {
     const { username, eventId } = req.body;
+    if (!username) {
+        console.log("Booking attempt failed: No username provided");
+        return res.status(401).send("You must be logged in to book an event");
+    }
     try {
         const user = await User.findOne({ username });
         const event = await Event.findOne({ eventId });

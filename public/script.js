@@ -64,31 +64,36 @@ if (document.querySelector(".event-details")) {
             document.getElementById("team-size").textContent = event.teamSize;
             document.getElementById("description").textContent = event.description;
 
-            // Book event
-            document.getElementById("book-btn").addEventListener("click", async () => {
-                const username = localStorage.getItem("username");
-                if (!username) {
-                    alert("Please login to book an event!");
-                    window.location.href = "login.html";
-                    return;
-                }
-                try {
-                    const response = await fetch("http://localhost:3000/book", {
-                        method: "POST",
-                        headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify({ username, eventId })
-                    });
-                    const result = await response.text();
-                    if (response.ok) {
-                        alert("Event booked successfully!");
-                    } else {
-                        alert(result);
+            const bookBtn = document.getElementById("book-btn");
+            const username = localStorage.getItem("username");
+            if (!username) {
+                bookBtn.disabled = true;
+                bookBtn.textContent = "Login to Book";
+                bookBtn.style.backgroundColor = "#ccc";
+                bookBtn.style.cursor = "not-allowed";
+                const loginPrompt = document.createElement("p");
+                loginPrompt.innerHTML = 'Please <a href="login.html">login</a> to book this event.';
+                document.querySelector(".event-details").appendChild(loginPrompt);
+            } else {
+                bookBtn.addEventListener("click", async () => {
+                    try {
+                        const response = await fetch("http://localhost:3000/book", {
+                            method: "POST",
+                            headers: { "Content-Type": "application/json" },
+                            body: JSON.stringify({ username, eventId })
+                        });
+                        const result = await response.text();
+                        if (response.ok) {
+                            alert("Event booked successfully!");
+                        } else {
+                            alert(result);
+                        }
+                    } catch (err) {
+                        console.error("Booking error:", err);
+                        alert("Error booking event");
                     }
-                } catch (err) {
-                    console.error("Booking error:", err);
-                    alert("Error booking event");
-                }
-            });
+                });
+            }
         }
     });
 }
