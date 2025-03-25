@@ -1,3 +1,32 @@
+// Function to update navigation bar
+function updateNavBar() {
+    const navBar = document.getElementById("nav-bar");
+    const username = localStorage.getItem("username");
+    if (username) {
+        navBar.innerHTML = `
+            <a href="index.html">Home</a>
+            <a href="profile.html">Profile</a>
+            <a href="#" id="logout-link">Logout</a>
+        `;
+        document.getElementById("logout-link").addEventListener("click", (e) => {
+            e.preventDefault();
+            localStorage.removeItem("username");
+            alert("Logged out successfully!");
+            window.location.href = "login.html";
+        });
+    } else {
+        navBar.innerHTML = `
+            <a href="index.html">Home</a>
+            <a href="profile.html">Profile</a>
+            <a href="login.html">Login</a>
+            <a href="register.html">Register</a>
+        `;
+    }
+}
+
+// Call updateNavBar on every page load
+document.addEventListener("DOMContentLoaded", updateNavBar);
+
 // Fetch events from backend
 async function fetchEvents() {
     try {
