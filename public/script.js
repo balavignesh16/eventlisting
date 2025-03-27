@@ -1,3 +1,32 @@
+// Theme Toggle Functionality
+function toggleTheme() {
+    const htmlElement = document.documentElement;
+    const themeIcon = document.getElementById('theme-icon');
+    const currentTheme = htmlElement.getAttribute('data-theme');
+    
+    if (currentTheme === 'light') {
+        htmlElement.setAttribute('data-theme', 'dark');
+        themeIcon.src = 'https://img.icons8.com/ios-filled/50/ffffff/moon-symbol.png';
+        localStorage.setItem('theme', 'dark');
+    } else {
+        htmlElement.setAttribute('data-theme', 'light');
+        themeIcon.src = 'https://img.icons8.com/ios-filled/50/ffffff/sun.png';
+        localStorage.setItem('theme', 'light');
+    }
+}
+
+// Load Saved Theme on Page Load
+document.addEventListener('DOMContentLoaded', () => {
+    const savedTheme = localStorage.getItem('theme') || 'light';
+    document.documentElement.setAttribute('data-theme', savedTheme);
+    const themeIcon = document.getElementById('theme-icon');
+    if (themeIcon) {
+        themeIcon.src = savedTheme === 'light' 
+            ? 'https://img.icons8.com/ios-filled/50/ffffff/sun.png' 
+            : 'https://img.icons8.com/ios-filled/50/ffffff/moon-symbol.png';
+    }
+});
+
 // Function to update navigation bar
 function updateNavBar() {
     const navBar = document.getElementById("nav-bar");
@@ -7,6 +36,9 @@ function updateNavBar() {
             <a href="index.html">Home</a>
             <a href="profile.html">Profile</a>
             <a href="#" id="logout-link">Logout</a>
+            <button class="theme-toggle" aria-label="Toggle Dark Mode" onclick="toggleTheme()">
+                <img src="https://img.icons8.com/ios-filled/50/ffffff/sun.png" alt="Toggle Theme" id="theme-icon">
+            </button>
         `;
         document.getElementById("logout-link").addEventListener("click", (e) => {
             e.preventDefault();
@@ -20,7 +52,19 @@ function updateNavBar() {
             <a href="profile.html">Profile</a>
             <a href="login.html">Login</a>
             <a href="register.html">Register</a>
+            <button class="theme-toggle" aria-label="Toggle Dark Mode" onclick="toggleTheme()">
+                <img src="https://img.icons8.com/ios-filled/50/ffffff/sun.png" alt="Toggle Theme" id="theme-icon">
+            </button>
         `;
+    }
+
+    // Ensure the theme icon reflects the current theme after the nav bar is updated
+    const savedTheme = localStorage.getItem('theme') || 'light';
+    const themeIcon = document.getElementById('theme-icon');
+    if (themeIcon) {
+        themeIcon.src = savedTheme === 'light' 
+            ? 'https://img.icons8.com/ios-filled/50/ffffff/sun.png' 
+            : 'https://img.icons8.com/ios-filled/50/ffffff/moon-symbol.png';
     }
 }
 
@@ -47,7 +91,10 @@ if (document.querySelector(".event-grid")) {
             tile.classList.add("event-tile");
             tile.innerHTML = `
                 <img src="${event.bannerUrl}" alt="${event.name}">
-                <h3>${event.name}</h3>
+                <div class="event-info">
+                    <h3>${event.name}</h3>
+                    <p>${event.description || "Join us for an exciting event!"}</p>
+                </div>
             `;
             tile.addEventListener("click", () => {
                 window.location.href = `event-details.html?id=${event.eventId}`;
@@ -66,7 +113,10 @@ if (document.querySelector(".event-grid")) {
                     tile.classList.add("event-tile");
                     tile.innerHTML = `
                         <img src="${event.bannerUrl}" alt="${event.name}">
-                        <h3>${event.name}</h3>
+                        <div class="event-info">
+                            <h3>${event.name}</h3>
+                            <p>${event.description || "Join us for an exciting event!"}</p>
+                        </div>
                     `;
                     tile.addEventListener("click", () => {
                         window.location.href = `event-details.html?id=${event.eventId}`;

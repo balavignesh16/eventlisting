@@ -1,32 +1,50 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="light">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>EventSphere - Upcoming Events</title>
+    <title>EventSphere - Premier Event Platform</title>
     <link rel="stylesheet" href="styles.css">
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700&family=Open+Sans:wght@400;500;600&display=swap" rel="stylesheet">
 </head>
 <body>
     <header>
         <h1>EventSphere</h1>
         <nav id="nav-bar">
-            <a href="index.html">Home</a>
-            <a href="profile.html">Profile</a>
-            <!-- Login/Logout links will be added dynamically -->
+            <!-- Navigation links will be added dynamically -->
         </nav>
     </header>
 
-    <section class="filters">
-        <h2>Filter by Genre</h2>
-        <button class="filter-btn" data-genre="all">All</button>
-        <button class="filter-btn" data-genre="music">Music</button>
-        <button class="filter-btn" data-genre="sports">Sports</button>
-        <button class="filter-btn" data-genre="tech">Tech</button>
-    </section>
+    <main>
+        <section class="hero">
+            <h2>Discover Premier Events</h2>
+            <p>Experience a world of curated events designed to inspire, connect, and celebrate.</p>
+        </section>
 
-    <section class="event-grid">
-        <!-- Event tiles will be dynamically added here -->
-    </section>
+        <section class="filters">
+            <h2>Explore by Genre</h2>
+            <div>
+                <button class="filter-btn" data-genre="all">All Events</button>
+                <button class="filter-btn" data-genre="music">Music</button>
+                <button class="filter-btn" data-genre="sports">Sports</button>
+                <button class="filter-btn" data-genre="tech">Tech</button>
+            </div>
+        </section>
+
+        <section class="event-grid">
+            <!-- Event tiles will be dynamically added here -->
+        </section>
+    </main>
+
+    <footer>
+        <p>© 2025 EventSphere Inc. All Rights Reserved.</p>
+        <p>
+            <a href="#">About Us</a> | 
+            <a href="#">Privacy Policy</a> | 
+            <a href="#">Terms & Conditions</a> | 
+            <a href="#">Contact Us</a>
+        </p>
+    </footer>
 
     <script src="script.js"></script>
 </body>

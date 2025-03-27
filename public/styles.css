@@ -1,141 +1,446 @@
-body {
-    font-family: Arial, sans-serif;
-    margin: 0;
-    padding: 0;
-    background: linear-gradient(135deg, #ffafbd, #ffc3a0);
-    color: #333;
+/* Custom Properties for Light and Dark Themes */
+:root {
+    --primary-dark: #1a3c5e; /* Deep navy for a professional look */
+    --primary-light: #2a6f97; /* Softer blue for accents */
+    --accent-gold: #d4a017; /* Gold for highlights */
+    --accent-teal: #26a69a; /* Teal for secondary accents */
+    --neutral-bg: #f8fafc; /* Off-white background */
+    --text-dark: #1f2a44; /* Darker text for readability */
+    --shadow: 0 8px 30px rgba(0, 0, 0, 0.1);
+    --shadow-light: 0 4px 15px rgba(0, 0, 0, 0.05);
+    /* Light Theme Defaults */
+    --bg-color: var(--neutral-bg);
+    --text-color: var(--text-dark);
+    --card-bg: #ffffff;
+    --card-bg-secondary: rgba(255, 255, 255, 0.9);
+    --border-color: rgba(0, 0, 0, 0.05);
+    --overlay-opacity: 0.1;
+    /* Custom background for booking items */
+    --booking-item-bg: #e6f0fa; /* Light blue-gray for light mode */
 }
 
+[data-theme="dark"] {
+    --bg-color: #1f2a44;
+    --text-color: #e2e8f0; /* Light gray for better readability in dark mode */
+    --card-bg: #2d3b55;
+    --card-bg-secondary: rgba(45, 59, 85, 0.9);
+    --border-color: rgba(255, 255, 255, 0.1);
+    --overlay-opacity: 0.2;
+    --primary-dark: #1a3c5e; /* Keep header background consistent */
+    --booking-item-bg: #3b4a6b; /* Slightly lighter than page background for dark mode */
+}
+
+/* Reset and Base Styles */
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+body {
+    font-family: 'Open Sans', sans-serif;
+    background: var(--bg-color);
+    color: var(--text-color);
+    line-height: 1.6;
+    overflow-x: hidden;
+    position: relative;
+    transition: background 0.3s ease, color 0.3s ease;
+}
+
+/* Animated Background Gradient */
+body::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, var(--primary-dark), var(--accent-teal));
+    opacity: var(--overlay-opacity);
+    z-index: -1;
+    animation: gradientShift 20s infinite alternate;
+}
+
+/* Header */
 header {
-    background: #ff6f61;
-    padding: 1rem;
-    text-align: center;
-    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+    background: var(--primary-dark);
+    padding: 1.5rem 4rem;
+    position: sticky;
+    top: 0;
+    z-index: 1000;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: var(--shadow);
+    width: 100%;
 }
 
 header h1 {
-    margin: 0;
-    color: white;
+    font-family: 'Poppins', sans-serif;
+    font-size: 2.2rem;
+    font-weight: 700;
+    color: #fff;
+    letter-spacing: 1px;
+}
+
+nav#nav-bar {
+    display: flex;
+    gap: 2rem;
+    align-items: center;
 }
 
 nav a {
-    color: white;
-    margin: 0 1rem;
+    color: #fff;
+    font-family: 'Open Sans', sans-serif;
+    font-weight: 500;
+    font-size: 1.1rem;
     text-decoration: none;
-    font-weight: bold;
+    padding: 0.5rem 0;
+    position: relative;
+    transition: color 0.3s ease;
 }
 
-.filters {
+nav a::after {
+    content: '';
+    position: absolute;
+    width: 0;
+    height: 2px;
+    bottom: 0;
+    left: 0;
+    background: var(--accent-gold);
+    transition: width 0.3s ease;
+}
+
+nav a:hover::after {
+    width: 100%;
+}
+
+nav a:hover {
+    color: var(--accent-gold);
+}
+
+/* Theme Toggle Button */
+.theme-toggle {
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 0.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.3s ease;
+}
+
+.theme-toggle:hover {
+    transform: scale(1.1);
+}
+
+.theme-toggle img {
+    width: 24px;
+    height: 24px;
+}
+
+/* Hero Section */
+.hero {
+    height: 70vh;
+    background: url('https://media.istockphoto.com/id/1806011581/photo/overjoyed-happy-young-people-dancing-jumping-and-singing-during-concert-of-favorite-group.jpg?s=612x612&w=0&k=20&c=cMFdhX403-yKneupEN-VWSfFdy6UWf1H0zqo6QBChP4=') no-repeat center/cover fixed;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
     text-align: center;
-    padding: 1rem;
+    color: #fff;
+    position: relative;
+    overflow: hidden;
+}
+
+.hero::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.6);
+    z-index: 1;
+}
+
+.hero h2, .hero p {
+    position: relative;
+    z-index: 2;
+}
+
+.hero h2 {
+    font-family: 'Poppins', sans-serif;
+    font-size: 4rem;
+    font-weight: 700;
+    margin-bottom: 1.5rem;
+    text-shadow: 0 4px 15px rgba(0, 0, 0, 0.5);
+    animation: fadeInDown 1s ease-out;
+}
+
+.hero p {
+    font-size: 1.5rem;
+    font-weight: 300;
+    max-width: 700px;
+    animation: fadeInUp 1.2s ease-out;
+}
+
+/* Filters Section */
+.filters {
+    background: var(--card-bg-secondary);
+    backdrop-filter: blur(10px);
+    padding: 2rem 4rem;
+    text-align: center;
+    position: sticky;
+    top: 5rem;
+    z-index: 900;
+    border-bottom: 2px solid var(--accent-teal);
+}
+
+.filters h2 {
+    font-family: 'Poppins', sans-serif;
+    font-size: 2rem;
+    font-weight: 600;
+    color: var(--text-color);
+    margin-bottom: 1.5rem;
+    letter-spacing: 0.5px;
+}
+
+.filters div {
+    display: flex;
+    justify-content: center;
+    gap: 1.5rem;
+    flex-wrap: wrap;
 }
 
 .filter-btn {
-    background: #ffcc5c;
+    background: var(--primary-light);
     border: none;
-    padding: 0.5rem 1rem;
-    margin: 0.2rem;
-    border-radius: 20px;
+    color: #fff;
+    padding: 0.8rem 2rem;
+    border-radius: 25px;
+    font-family: 'Open Sans', sans-serif;
+    font-weight: 600;
+    font-size: 1rem;
     cursor: pointer;
-    transition: transform 0.2s;
+    box-shadow: var(--shadow-light);
+    transition: all 0.3s ease;
 }
 
 .filter-btn:hover {
-    transform: scale(1.1);
-    background: #ff9f1c;
+    background: var(--accent-teal);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
 }
 
+/* Event Grid */
 .event-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    gap: 1rem;
-    padding: 2rem;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 2rem;
+    padding: 4rem 5%;
+    max-width: 1400px;
+    margin: 0 auto;
 }
 
 .event-tile {
-    background: rgba(255, 255, 255, 0.9);
+    background: var(--card-bg);
     border-radius: 15px;
     overflow: hidden;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
-    cursor: pointer;
-    transition: transform 0.3s;
+    box-shadow: var(--shadow-light);
+    transition: all 0.3s ease;
+    border: 1px solid var(--border-color);
 }
 
 .event-tile:hover {
-    transform: translateY(-10px);
+    transform: translateY(-5px);
+    box-shadow: 0 12px 30px rgba(0, 0, 0, 0.15);
 }
 
 .event-tile img {
     width: 100%;
-    height: 150px;
+    height: 200px;
     object-fit: cover;
+    position: relative;
+}
+
+.event-tile .event-info {
+    padding: 1.5rem;
+    text-align: left;
 }
 
 .event-tile h3 {
-    padding: 0.5rem;
-    margin: 0;
-    color: #ff6f61;
+    font-family: 'Poppins', sans-serif;
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--text-color);
+    margin-bottom: 0.5rem;
 }
 
+.event-tile p {
+    font-size: 0.9rem;
+    color: var(--text-color);
+    opacity: 0.8;
+    line-height: 1.4;
+}
+
+/* Event Details, Login, Profile */
 .event-details, .login-container, .profile {
-    max-width: 600px;
-    margin: 2rem auto;
-    padding: 2rem;
-    background: white;
+    max-width: 900px;
+    margin: 4rem auto;
+    padding: 3rem;
+    background: var(--card-bg);
     border-radius: 15px;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    box-shadow: var(--shadow);
 }
 
 .event-details img {
     width: 100%;
     border-radius: 10px;
+    margin-bottom: 2rem;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.1);
 }
 
-#book-btn {
-    background: #ff6f61;
-    color: white;
+.event-details h2, .profile h2 {
+    font-family: 'Poppins', sans-serif;
+    font-size: 2.5rem;
+    font-weight: 700;
+    color: var(--text-color);
+    margin-bottom: 2rem;
+    letter-spacing: 0.5px;
+}
+
+/* Buttons */
+#book-btn, #login-form button, #register-form button {
+    background: var(--primary-light);
+    color: #fff;
     border: none;
-    padding: 0.8rem 1.5rem;
-    border-radius: 20px;
+    padding: 1rem 2.5rem;
+    border-radius: 25px;
+    font-family: 'Open Sans', sans-serif;
+    font-size: 1.1rem;
+    font-weight: 600;
     cursor: pointer;
+    box-shadow: var(--shadow-light);
+    transition: all 0.3s ease;
 }
 
+#book-btn:hover, #login-form button:hover, #register-form button:hover {
+    background: var(--accent-teal);
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+}
+
+#book-btn:disabled {
+    background: #d1d5db;
+    cursor: not-allowed;
+    transform: none;
+    box-shadow: none;
+}
+
+/* Login/Register Forms */
 .login-container {
-    max-width: 400px;
+    max-width: 500px;
 }
 
 #login-form, #register-form {
     display: flex;
     flex-direction: column;
-    gap: 1rem;
+    gap: 1.5rem;
 }
 
 #login-form input, #register-form input {
-    padding: 0.5rem;
-    border: 1px solid #ccc;
-    border-radius: 5px;
+    padding: 1rem;
+    border: 1px solid var(--border-color);
+    border-radius: 8px;
+    font-size: 1rem;
+    outline: none;
+    transition: all 0.3s ease;
 }
 
-#login-form button, #register-form button {
-    background: #ff6f61;
-    color: white;
-    border: none;
-    padding: 0.8rem;
-    border-radius: 20px;
-    cursor: pointer;
+#login-form input:focus, #register-form input:focus {
+    border-color: var(--accent-teal);
+    box-shadow: 0 0 8px rgba(38, 166, 154, 0.3);
 }
 
-#login-form button:hover, #register-form button:hover {
-    background: #ff9f1c;
-}
-
+/* Bookings List */
 .bookings-list {
     display: flex;
     flex-direction: column;
-    gap: 1rem;
+    gap: 2rem;
 }
+
 .booking-item {
-    background: rgba(255, 255, 255, 0.8);
-    padding: 1rem;
+    background: var(--booking-item-bg);
+    padding: 2rem;
     border-radius: 10px;
+    box-shadow: var(--shadow-light);
+    transition: all 0.3s ease;
+}
+
+.booking-item:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.1);
+}
+
+.booking-item h3 {
+    font-size: 1.8rem;
+    color: var(--text-color);
+    margin-bottom: 1rem;
+}
+
+.booking-item p {
+    font-size: 1rem;
+    color: var(--text-color);
+}
+
+/* Ensure all text in profile section uses the correct color */
+.profile p {
+    color: var(--text-color);
+}
+
+/* Footer */
+footer {
+    background: var(--primary-dark);
+    color: #fff;
+    padding: 3rem 4rem;
+    text-align: center;
+    font-family: 'Open Sans', sans-serif;
+    font-size: 1rem;
+}
+
+footer p {
+    margin-bottom: 0.5rem;
+}
+
+footer a {
+    color: var(--accent-gold);
+    text-decoration: none;
+    font-weight: 500;
+    transition: color 0.3s ease;
+}
+
+footer a:hover {
+    color: var(--accent-teal);
+}
+
+/* Animations */
+@keyframes gradientShift {
+    0% { background-position: 0% 50%; }
+    100% { background-position: 100% 50%; }
+}
+
+@keyframes fadeInDown {
+    from { transform: translateY(-20px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
+
+@keyframes fadeInUp {
+    from { transform: translateY(20px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
+
+.event-grid, .hero, .filters, .event-details, .login-container, .profile {
+    animation: fadeInUp 0.8s ease-out;
 }
