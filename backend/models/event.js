@@ -13,3 +13,15 @@ const eventSchema = new mongoose.Schema({
 });
 
 module.exports = mongoose.model("Event", eventSchema);
+//Example insertion 
+// {
+//     "eventId": "3",
+//     "name": "Sports Marathon",
+//     "date": "2025-05-15T00:00:00Z",
+//     "day": "Thursday",
+//     "ticketPrice": 30,
+//     "teamSize": 2,
+//     "genre": "sports",
+//     "bannerUrl": "https://via.placeholder.com/300x150.png?text=Marathon",
+//     "description": "Run for glory in this annual marathon!"
+//   }
