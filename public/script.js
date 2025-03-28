@@ -229,7 +229,7 @@ if (document.getElementById("login-form")) {
                 const data = await response.json();
                 localStorage.setItem("username", data.username);
                 alert("Login successful!");
-                window.location.href = "profile.html";
+                window.location.href = "index.html";
             } else {
                 alert("Invalid username or password");
             }
