@@ -48,7 +48,11 @@ app.post("/login", async (req, res) => {
             return res.status(401).send("Invalid username or password");
         }
         console.log("Login successful for:", username);
-        res.json({ message: "Login successful", username: user.username });
+        res.json({
+            message: "Login successful",
+            username: user.username,
+            isAdmin: username === "admin" // Add isAdmin flag
+        });
     } catch (err) {
         console.error("Error logging in:", err);
         res.status(500).send("Error logging in");
@@ -66,8 +70,13 @@ app.get("/events", async (req, res) => {
     }
 });
 
-// Add or update an event
+// Add or update an event (admin only)
 app.post("/events", async (req, res) => {
+    const { username } = req.query; // Get username from query parameter
+    if (username !== "admin") {
+        return res.status(403).send("Forbidden: Only admin can add or update events");
+    }
+
     const { eventId, name, date, day, ticketPrice, teamSize, genre, bannerUrl, description } = req.body;
     try {
         const existingEvent = await Event.findOne({ eventId });
@@ -84,6 +93,58 @@ app.post("/events", async (req, res) => {
     } catch (err) {
         console.error("Error adding/updating event:", err);
         res.status(500).send("Error adding/updating event");
+    }
+});
+
+// Delete an event (admin only)
+app.delete("/events/:eventId", async (req, res) => {
+    const { username } = req.query; // Get username from query parameter
+    if (username !== "admin") {
+        return res.status(403).send("Forbidden: Only admin can delete events");
+    }
+
+    const { eventId } = req.params;
+    try {
+        const event = await Event.findOneAndDelete({ eventId });
+        if (!event) {
+            return res.status(404).send("Event not found");
+        }
+        // Remove the event from all users' bookings
+        await User.updateMany(
+            { "bookings.eventId": eventId },
+            { $pull: { bookings: { eventId } } }
+        );
+        console.log("Event deleted:", eventId);
+        res.status(200).send("Event deleted successfully");
+    } catch (err) {
+        console.error("Error deleting event:", err);
+        res.status(500).send("Error deleting event");
+    }
+});
+
+// Get registration details for an event (admin only)
+app.get("/events/:eventId/registrations", async (req, res) => {
+    const { username } = req.query; // Get username from query parameter
+    if (username !== "admin") {
+        return res.status(403).send("Forbidden: Only admin can view registrations");
+    }
+
+    const { eventId } = req.params;
+    try {
+        const users = await User.find({ "bookings.eventId": eventId });
+        const registrations = users.map(user => ({
+            username: user.username,
+            eventName: user.bookings.find(booking => booking.eventId === eventId).eventName,
+            date: user.bookings.find(booking => booking.eventId === eventId).date,
+            ticketPrice: user.bookings.find(booking => booking.eventId === eventId).ticketPrice
+        }));
+        res.json({
+            totalRegistrations: registrations.length,
+            users: registrations
+        });
+    } catch (err) {
+        console.error("Error fetching registrations:", err);
+        res.status(500).send("Error fetching registrations");
     }
 });
 

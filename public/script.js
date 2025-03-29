@@ -35,6 +35,7 @@ function updateNavBar() {
         navBar.innerHTML = `
             <a href="index.html">Home</a>
             <a href="profile.html">Profile</a>
+            ${username === "admin" ? '<a href="admin.html">Admin</a>' : ''}
             <a href="#" id="logout-link">Logout</a>
             <button class="theme-toggle" aria-label="Toggle Dark Mode" onclick="toggleTheme()">
                 <img src="https://img.icons8.com/ios-filled/50/ffffff/sun.png" alt="Toggle Theme" id="theme-icon">
@@ -43,6 +44,7 @@ function updateNavBar() {
         document.getElementById("logout-link").addEventListener("click", (e) => {
             e.preventDefault();
             localStorage.removeItem("username");
+            localStorage.removeItem("isAdmin");
             alert("Logged out successfully!");
             window.location.href = "login.html";
         });
@@ -228,8 +230,13 @@ if (document.getElementById("login-form")) {
             if (response.ok) {
                 const data = await response.json();
                 localStorage.setItem("username", data.username);
+                localStorage.setItem("isAdmin", data.isAdmin);
                 alert("Login successful!");
-                window.location.href = "index.html";
+                if (data.isAdmin) {
+                    window.location.href = "admin.html";
+                } else {
+                    window.location.href = "index.html";
+                }
             } else {
                 alert("Invalid username or password");
             }
@@ -269,5 +276,192 @@ if (document.querySelector(".profile")) {
                 console.error("Error fetching bookings:", err);
                 bookingsList.innerHTML = "<p>Error loading bookings.</p>";
             });
+    }
+}
+
+// Admin Page Logic
+document.addEventListener('DOMContentLoaded', () => {
+    if (window.location.pathname.includes('admin.html')) {
+        checkAdminAccess();
+        loadEvents();
+        setupAddEventForm();
+    }
+});
+
+// Check if the user is an admin
+function checkAdminAccess() {
+    const username = localStorage.getItem('username');
+    const isAdmin = localStorage.getItem('isAdmin') === 'true';
+    const adminContent = document.querySelector('.admin-content');
+    const accessDenied = document.querySelector('.access-denied');
+
+    if (!username || !isAdmin) {
+        accessDenied.style.display = 'block';
+        adminContent.style.display = 'none';
+        setTimeout(() => {
+            window.location.href = 'index.html';
+        }, 2000);
+    } else {
+        accessDenied.style.display = 'none';
+        adminContent.style.display = 'block';
+    }
+}
+
+// Fetch and display all events with registration details
+function loadEvents() {
+    fetch('http://localhost:3000/events')
+        .then(response => response.json())
+        .then(events => {
+            const eventsContainer = document.getElementById('events-container');
+            eventsContainer.innerHTML = '';
+
+            events.forEach(event => {
+                const eventItem = document.createElement('div');
+                eventItem.classList.add('event-item');
+                eventItem.innerHTML = `
+                    <div>
+                        <h4>${event.name}</h4>
+                        <p>Date: ${new Date(event.date).toLocaleDateString()}</p>
+                        <p>Ticket Price: $${event.ticketPrice}</p>
+                        <p>${event.description}</p>
+                        <div class="registrations" id="registrations-${event.eventId}">
+                            <h5>Registrations: <span>Loading...</span></h5>
+                            <ul></ul>
+                        </div>
+                    </div>
+                    <div class="actions">
+                        <button class="admin-btn edit" onclick="editEvent('${event.eventId}')">Edit</button>
+                        <button class="admin-btn delete" onclick="deleteEvent('${event.eventId}')">Delete</button>
+                        <button class="admin-btn view-registrations" onclick="loadRegistrations('${event.eventId}')">View Registrations</button>
+                    </div>
+                `;
+                eventsContainer.appendChild(eventItem);
+                loadRegistrations(event.eventId); // Load registrations for each event
+            });
+        })
+        .catch(error => console.error('Error fetching events:', error));
+}
+
+// Load registration details for an event
+function loadRegistrations(eventId) {
+    const username = localStorage.getItem('username');
+    fetch(`http://localhost:3000/events/${eventId}/registrations?username=${username}`)
+        .then(response => response.json())
+        .then(data => {
+            const registrationsDiv = document.getElementById(`registrations-${eventId}`);
+            const span = registrationsDiv.querySelector('span');
+            const ul = registrationsDiv.querySelector('ul');
+
+            span.textContent = data.totalRegistrations;
+            ul.innerHTML = '';
+
+            data.users.forEach(user => {
+                const li = document.createElement('li');
+                li.textContent = `Username: ${user.username}`;
+                ul.appendChild(li);
+            });
+        })
+        .catch(error => console.error('Error fetching registrations:', error));
+}
+
+// Setup the Add Event form
+function setupAddEventForm() {
+    const addEventForm = document.getElementById('add-event-form');
+    addEventForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+
+        const formData = new FormData(addEventForm);
+        const eventData = {
+            eventId: Date.now().toString(), // Generate a unique eventId
+            name: formData.get('name'),
+            date: formData.get('date'),
+            day: new Date(formData.get('date')).toLocaleDateString('en-US', { weekday: 'long' }),
+            ticketPrice: parseFloat(formData.get('price')),
+            teamSize: formData.get('teamSize') || "1",
+            genre: formData.get('genre') || "General",
+            bannerUrl: formData.get('bannerUrl') || "https://via.placeholder.com/300x150",
+            description: formData.get('description')
+        };
+
+        addEvent(eventData);
+    });
+}
+
+// Add or update an event
+function addEvent(eventData) {
+    const username = localStorage.getItem('username');
+    fetch(`http://localhost:3000/events?username=${username}`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(eventData)
+    })
+        .then(response => response.text())
+        .then(() => {
+            alert('Event added successfully!');
+            document.getElementById('add-event-form').reset();
+            loadEvents();
+        })
+        .catch(error => console.error('Error adding event:', error));
+}
+
+// Edit an event
+function editEvent(eventId) {
+    fetch(`http://localhost:3000/events`)
+        .then(response => response.json())
+        .then(events => {
+            const event = events.find(e => e.eventId === eventId);
+            const newName = prompt('Enter new event name:', event.name);
+            const newDate = prompt('Enter new date (YYYY-MM-DD):', event.date.split('T')[0]);
+            const newPrice = prompt('Enter new ticket price:', event.ticketPrice);
+            const newTeamSize = prompt('Enter new team size:', event.teamSize);
+            const newGenre = prompt('Enter new genre:', event.genre);
+            const newBannerUrl = prompt('Enter new banner URL:', event.bannerUrl);
+            const newDescription = prompt('Enter new description:', event.description);
+
+            if (newName && newDate && newPrice && newTeamSize && newGenre && newBannerUrl && newDescription) {
+                const updatedEvent = {
+                    eventId: event.eventId,
+                    name: newName,
+                    date: newDate,
+                    day: new Date(newDate).toLocaleDateString('en-US', { weekday: 'long' }),
+                    ticketPrice: parseFloat(newPrice),
+                    teamSize: newTeamSize,
+                    genre: newGenre,
+                    bannerUrl: newBannerUrl,
+                    description: newDescription
+                };
+
+                const username = localStorage.getItem('username');
+                fetch(`http://localhost:3000/events?username=${username}`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(updatedEvent)
+                })
+                    .then(() => {
+                        alert('Event updated successfully!');
+                        loadEvents();
+                    })
+                    .catch(error => console.error('Error updating event:', error));
+            }
+        })
+        .catch(error => console.error('Error fetching event:', error));
+}
+
+// Delete an event
+function deleteEvent(eventId) {
+    if (confirm('Are you sure you want to delete this event?')) {
+        const username = localStorage.getItem('username');
+        fetch(`http://localhost:3000/events/${eventId}?username=${username}`, {
+            method: 'DELETE'
+        })
+            .then(() => {
+                alert('Event deleted successfully!');
+                loadEvents();
+            })
+            .catch(error => console.error('Error deleting event:', error));
     }
 }

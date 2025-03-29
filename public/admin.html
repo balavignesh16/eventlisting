@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Panel - EventSphere</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <header>
+        <h1>EventSphere</h1>
+        <nav id="nav-bar"></nav>
+    </header>
+
+    <section class="admin-dashboard">
+        <h2>Admin Panel</h2>
+        <div class="access-denied" style="display: none;">
+            <p>Access Denied: You do not have permission to view this page.</p>
+        </div>
+
+        <div class="admin-content" style="display: none;">
+            <!-- Form to Add New Event -->
+            <div class="add-event-form">
+                <h3>Add New Event</h3>
+                <form id="add-event-form">
+                    <label for="event-name">Event Name:</label>
+                    <input type="text" id="event-name" name="name" required>
+
+                    <label for="event-date">Date:</label>
+                    <input type="date" id="event-date" name="date" required>
+
+                    <label for="event-price">Ticket Price ($):</label>
+                    <input type="number" id="event-price" name="price" step="0.01" required>
+
+                    <label for="event-team-size">Team Size:</label>
+                    <input type="text" id="event-team-size" name="teamSize">
+
+                    <label for="event-genre">Genre:</label>
+                    <input type="text" id="event-genre" name="genre">
+
+                    <label for="event-banner-url">Banner URL:</label>
+                    <input type="text" id="event-banner-url" name="bannerUrl" placeholder="https://via.placeholder.com/300x150">
+
+                    <label for="event-description">Description:</label>
+                    <textarea id="event-description" name="description" required></textarea>
+
+                    <button type="submit" class="admin-btn">Add Event</button>
+                </form>
+            </div>
+
+            <!-- List of Events -->
+            <div class="event-list">
+                <h3>Manage Events</h3>
+                <div id="events-container"></div>
+            </div>
+        </div>
+    </section>
+
+    <footer>
+        <p>© 2025 EventSphere. All rights reserved.</p>
+        <p><a href="mailto:support@eventsphere.com">Contact Us</a></p>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>
