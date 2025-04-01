@@ -178,6 +178,19 @@ app.post("/book", async (req, res) => {
         res.status(500).send("Error booking event");
     }
 });
+app.post("/bookings/cancel", async (req, res) => {
+    const { username, eventId } = req.body;
+    
+    // Remove the booking from the database (Example: MongoDB or JSON file)
+    const result = await bookingsCollection.deleteOne({ username, eventId });
+
+    if (result.deletedCount > 0) {
+        res.send("Booking canceled successfully.");
+    } else {
+        res.status(400).send("Failed to cancel booking or booking not found.");
+    }
+});
+
 
 // Get user bookings
 app.get("/bookings/:username", async (req, res) => {

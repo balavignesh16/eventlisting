@@ -615,3 +615,25 @@ footer a:hover {
 .admin-btn.view-registrations {
     background: #2ecc71; /* Green for view registrations button */
 }
+/* Cancel Booking Button */
+.cancel-btn {
+    display: inline-block;
+    background: #e94e77; /* Red for cancel button */
+    color: #fff;
+    border: none;
+    padding: 0.6rem 1.2rem;
+    border-radius: 25px;
+    font-family: 'Open Sans', sans-serif;
+    font-size: 0.9rem;
+    font-weight: 600;
+    cursor: pointer;
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+    margin-top: 0.5rem;
+}
+
+.cancel-btn:hover {
+    background: #c0392b;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+}

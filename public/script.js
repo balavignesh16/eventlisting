@@ -251,6 +251,7 @@ if (document.getElementById("login-form")) {
 if (document.querySelector(".profile")) {
     const username = localStorage.getItem("username");
     const bookingsList = document.querySelector(".bookings-list");
+
     if (!username) {
         bookingsList.innerHTML = "<p>Please login to see your bookings.</p>";
     } else {
@@ -260,6 +261,8 @@ if (document.querySelector(".profile")) {
                 if (bookings.length === 0) {
                     bookingsList.innerHTML = `<p>Welcome, ${username}! No bookings yet.</p>`;
                 } else {
+                    bookingsList.innerHTML = ""; // Clear previous content
+
                     bookings.forEach(booking => {
                         const item = document.createElement("div");
                         item.classList.add("booking-item");
@@ -267,8 +270,18 @@ if (document.querySelector(".profile")) {
                             <h3>${booking.eventName}</h3>
                             <p><strong>Date:</strong> ${new Date(booking.date).toLocaleDateString()}</p>
                             <p><strong>Ticket Price:</strong> $${booking.ticketPrice}</p>
+                            <button class="cancel-btn" data-event-id="${booking.eventId}">Cancel Booking</button>
                         `;
+
                         bookingsList.appendChild(item);
+                    });
+
+                    // Add event listeners to cancel buttons
+                    document.querySelectorAll(".cancel-btn").forEach(button => {
+                        button.addEventListener("click", (e) => {
+                            const eventId = e.target.getAttribute("data-event-id");
+                            cancelBooking(eventId);
+                        });
                     });
                 }
             })
@@ -463,5 +476,34 @@ function deleteEvent(eventId) {
                 loadEvents();
             })
             .catch(error => console.error('Error deleting event:', error));
+    }
+}
+function cancelBooking(eventId) {
+    const username = localStorage.getItem("username");
+
+    if (confirm("Are you sure you want to cancel this booking?")) {
+        fetch("http://localhost:3000/cancel-booking", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ username, eventId })
+        })
+            .then(response => response.text())
+            .then(result => {
+                if (result === "Booking canceled successfully") {
+                    alert("Booking canceled successfully!");
+                    
+                    // Force full page reload
+                    location.reload();
+                    
+                    // Alternative: Reload just the bookings list if you prefer a smooth update
+                    // loadBookings(); 
+                } else {
+                    alert(result);
+                }
+            })
+            .catch(err => {
+                console.error("Error canceling booking:", err);
+                alert("Error canceling booking");
+            });
     }
 }
