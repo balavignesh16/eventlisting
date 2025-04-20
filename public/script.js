@@ -507,3 +507,72 @@ function cancelBooking(eventId) {
             });
     }
 }
+// Fetch events from backend
+async function fetchEvents() {
+    try {
+        const response = await fetch("http://localhost:3000/events");
+        return await response.json();
+    } catch (err) {
+        console.error("Error fetching events:", err);
+        return [];
+    }
+}
+
+// Populate event grid with search and filter functionality
+if (document.querySelector(".event-grid")) {
+    let allEvents = [];
+    fetchEvents().then(events => {
+        allEvents = events; // Store all events for filtering
+        displayEvents(allEvents);
+
+        // Search functionality
+        const searchInput = document.getElementById("event-search");
+        searchInput.addEventListener("input", () => {
+            const searchTerm = searchInput.value.toLowerCase();
+            const filteredEvents = allEvents.filter(event =>
+                event.name.toLowerCase().includes(searchTerm) ||
+                (event.genre && event.genre.toLowerCase().includes(searchTerm))
+            );
+            displayEvents(filteredEvents);
+        });
+
+        // Filter functionality
+        document.querySelectorAll(".filter-btn").forEach(btn => {
+            btn.addEventListener("click", () => {
+                const genre = btn.dataset.genre;
+                let filteredEvents = allEvents;
+                if (genre !== "all") {
+                    filteredEvents = allEvents.filter(e => e.genre === genre);
+                }
+                const searchTerm = searchInput.value.toLowerCase();
+                if (searchTerm) {
+                    filteredEvents = filteredEvents.filter(event =>
+                        event.name.toLowerCase().includes(searchTerm) ||
+                        (event.genre && event.genre.toLowerCase().includes(searchTerm))
+                    );
+                }
+                displayEvents(filteredEvents);
+            });
+        });
+    });
+
+    function displayEvents(events) {
+        const eventGrid = document.querySelector(".event-grid");
+        eventGrid.innerHTML = '';
+        events.forEach(event => {
+            const tile = document.createElement("div");
+            tile.classList.add("event-tile");
+            tile.innerHTML = `
+                <img src="${event.bannerUrl}" alt="${event.name}">
+                <div class="event-info">
+                    <h3>${event.name}</h3>
+                    <p>${event.description || "Join us for an exciting event!"}</p>
+                </div>
+            `;
+            tile.addEventListener("click", () => {
+                window.location.href = `event-details.html?id=${event.eventId}`;
+            });
+            eventGrid.appendChild(tile);
+        });
+    }
+}
