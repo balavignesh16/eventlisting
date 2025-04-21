@@ -72,20 +72,20 @@ app.get("/events", async (req, res) => {
 
 // Add or update an event (admin only)
 app.post("/events", async (req, res) => {
-    const { username } = req.query; // Get username from query parameter
+    const { username } = req.query;
     if (username !== "admin") {
         return res.status(403).send("Forbidden: Only admin can add or update events");
     }
 
-    const { eventId, name, date, day, ticketPrice, teamSize, genre, bannerUrl, description } = req.body;
+    const { eventId, name, date, day, ticketPrice, teamSize, genre, college, bannerUrl, description } = req.body;
     try {
         const existingEvent = await Event.findOne({ eventId });
         if (existingEvent) {
-            await Event.updateOne({ eventId }, { name, date, day, ticketPrice, teamSize, genre, bannerUrl, description });
+            await Event.updateOne({ eventId }, { name, date, day, ticketPrice, teamSize, genre, college, bannerUrl, description });
             console.log("Event updated:", eventId);
             res.status(200).send("Event updated successfully");
         } else {
-            const event = new Event({ eventId, name, date, day, ticketPrice, teamSize, genre, bannerUrl, description });
+            const event = new Event({ eventId, name, date, day, ticketPrice, teamSize, genre, college, bannerUrl, description });
             await event.save();
             console.log("Event added:", eventId);
             res.status(201).send("Event added successfully");
@@ -98,7 +98,7 @@ app.post("/events", async (req, res) => {
 
 // Delete an event (admin only)
 app.delete("/events/:eventId", async (req, res) => {
-    const { username } = req.query; // Get username from query parameter
+    const { username } = req.query;
     if (username !== "admin") {
         return res.status(403).send("Forbidden: Only admin can delete events");
     }
@@ -109,7 +109,6 @@ app.delete("/events/:eventId", async (req, res) => {
         if (!event) {
             return res.status(404).send("Event not found");
         }
-        // Remove the event from all users' bookings
         await User.updateMany(
             { "bookings.eventId": eventId },
             { $pull: { bookings: { eventId } } }
@@ -124,7 +123,7 @@ app.delete("/events/:eventId", async (req, res) => {
 
 // Get registration details for an event (admin only)
 app.get("/events/:eventId/registrations", async (req, res) => {
-    const { username } = req.query; // Get username from query parameter
+    const { username } = req.query;
     if (username !== "admin") {
         return res.status(403).send("Forbidden: Only admin can view registrations");
     }
@@ -132,11 +131,14 @@ app.get("/events/:eventId/registrations", async (req, res) => {
     const { eventId } = req.params;
     try {
         const users = await User.find({ "bookings.eventId": eventId });
+        const event = await Event.findOne({ eventId });
+        const college = event?.college || "Unknown";
         const registrations = users.map(user => ({
             username: user.username,
             eventName: user.bookings.find(booking => booking.eventId === eventId).eventName,
             date: user.bookings.find(booking => booking.eventId === eventId).date,
-            ticketPrice: user.bookings.find(booking => booking.eventId === eventId).ticketPrice
+            ticketPrice: user.bookings.find(booking => booking.eventId === eventId).ticketPrice,
+            college: college
         }));
         res.json({
             totalRegistrations: registrations.length,
@@ -168,7 +170,8 @@ app.post("/book", async (req, res) => {
             eventId: event.eventId,
             eventName: event.name,
             date: event.date,
-            ticketPrice: event.ticketPrice
+            ticketPrice: event.ticketPrice,
+            college: event.college
         });
         await user.save();
         console.log("Booking added for:", username, eventId);
@@ -178,19 +181,31 @@ app.post("/book", async (req, res) => {
         res.status(500).send("Error booking event");
     }
 });
+
+// Cancel a booking (only for logged-in users)
 app.post("/bookings/cancel", async (req, res) => {
     const { username, eventId } = req.body;
-    
-    // Remove the booking from the database (Example: MongoDB or JSON file)
-    const result = await bookingsCollection.deleteOne({ username, eventId });
-
-    if (result.deletedCount > 0) {
-        res.send("Booking canceled successfully.");
-    } else {
-        res.status(400).send("Failed to cancel booking or booking not found.");
+    if (!username) {
+        return res.status(401).send("You must be logged in to cancel a booking");
+    }
+    try {
+        const user = await User.findOne({ username });
+        if (!user) {
+            return res.status(404).send("User not found");
+        }
+        const bookingIndex = user.bookings.findIndex(b => b.eventId === eventId);
+        if (bookingIndex === -1) {
+            return res.status(404).send("Booking not found");
+        }
+        user.bookings.splice(bookingIndex, 1);
+        await user.save();
+        console.log("Booking canceled for:", username, eventId);
+        res.send("Booking canceled successfully");
+    } catch (err) {
+        console.error("Error canceling booking:", err);
+        res.status(500).send("Error canceling booking");
     }
 });
-
 
 // Get user bookings
 app.get("/bookings/:username", async (req, res) => {

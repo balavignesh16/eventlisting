@@ -7,6 +7,7 @@ const userSchema = new mongoose.Schema({
         eventId: String,
         eventName: String,
         date: Date,
+        
         ticketPrice: Number
     }]
 });

@@ -9,7 +9,8 @@ const eventSchema = new mongoose.Schema({
     teamSize: Number,
     genre: String,
     bannerUrl: String,
-    description: String
+    description: String,
+    college: { type: String, required: true } // Added college field
 });
 
 module.exports = mongoose.model("Event", eventSchema);

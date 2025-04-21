@@ -25,6 +25,7 @@ document.addEventListener('DOMContentLoaded', () => {
             ? 'https://img.icons8.com/ios-filled/50/ffffff/sun.png' 
             : 'https://img.icons8.com/ios-filled/50/ffffff/moon-symbol.png';
     }
+    updateNavBar();
 });
 
 // Function to update navigation bar
@@ -60,7 +61,6 @@ function updateNavBar() {
         `;
     }
 
-    // Ensure the theme icon reflects the current theme after the nav bar is updated
     const savedTheme = localStorage.getItem('theme') || 'light';
     const themeIcon = document.getElementById('theme-icon');
     if (themeIcon) {
@@ -69,9 +69,6 @@ function updateNavBar() {
             : 'https://img.icons8.com/ios-filled/50/ffffff/moon-symbol.png';
     }
 }
-
-// Call updateNavBar on every page load
-document.addEventListener("DOMContentLoaded", updateNavBar);
 
 // Fetch events from backend
 async function fetchEvents() {
@@ -84,50 +81,108 @@ async function fetchEvents() {
     }
 }
 
-// Populate event grid
+// Populate event grid with search, genre, and college filtering
 if (document.querySelector(".event-grid")) {
-    fetchEvents().then(events => {
-        const eventGrid = document.querySelector(".event-grid");
-        events.forEach(event => {
-            const tile = document.createElement("div");
-            tile.classList.add("event-tile");
-            tile.innerHTML = `
-                <img src="${event.bannerUrl}" alt="${event.name}">
-                <div class="event-info">
-                    <h3>${event.name}</h3>
-                    <p>${event.description || "Join us for an exciting event!"}</p>
-                </div>
-            `;
-            tile.addEventListener("click", () => {
-                window.location.href = `event-details.html?id=${event.eventId}`;
-            });
-            eventGrid.appendChild(tile);
-        });
+    let allEvents = [];
+    let selectedGenre = "all";
+    let selectedCollege = "all";
 
-        // Filter functionality
+    fetchEvents().then(events => {
+        allEvents = events;
+        displayEvents(allEvents, selectedGenre, selectedCollege);
+
+        // Show filter container on page load
+        const filterContainer = document.querySelector(".filter-container");
+        if (filterContainer) {
+            filterContainer.style.display = "block";
+        }
+
+        // Genre selection (buttons)
         document.querySelectorAll(".filter-btn").forEach(btn => {
             btn.addEventListener("click", () => {
-                const genre = btn.dataset.genre;
-                eventGrid.innerHTML = "";
-                const filteredEvents = genre === "all" ? events : events.filter(e => e.genre === genre);
-                filteredEvents.forEach(event => {
-                    const tile = document.createElement("div");
-                    tile.classList.add("event-tile");
-                    tile.innerHTML = `
-                        <img src="${event.bannerUrl}" alt="${event.name}">
-                        <div class="event-info">
-                            <h3>${event.name}</h3>
-                            <p>${event.description || "Join us for an exciting event!"}</p>
-                        </div>
-                    `;
-                    tile.addEventListener("click", () => {
-                        window.location.href = `event-details.html?id=${event.eventId}`;
-                    });
-                    eventGrid.appendChild(tile);
-                });
+                selectedGenre = btn.dataset.genre;
+                document.querySelectorAll(".filter-btn").forEach(b => b.classList.remove("active"));
+                btn.classList.add("active");
+                displayEvents(allEvents, selectedGenre, selectedCollege);
             });
         });
+
+        // Default genre to "All"
+        const allGenreBtn = document.querySelector(".filter-btn[data-genre='all']");
+        if (allGenreBtn) {
+            allGenreBtn.classList.add("active");
+        }
+
+        // College selection (buttons)
+        document.querySelectorAll(".college-icon").forEach(btn => {
+            btn.addEventListener("click", () => {
+                selectedCollege = btn.dataset.college;
+                document.querySelectorAll(".college-icon").forEach(b => b.classList.remove("active"));
+                btn.classList.add("active");
+                displayEvents(allEvents, selectedGenre, selectedCollege);
+            });
+        });
+
+        // Default college to "All"
+        const allCollegeBtn = document.querySelector(".college-icon[data-college='all']");
+        if (allCollegeBtn) {
+            allCollegeBtn.classList.add("active");
+        }
+
+        // Search functionality
+        const searchInput = document.getElementById("event-search");
+        if (searchInput) {
+            searchInput.addEventListener("input", () => {
+                const searchTerm = searchInput.value.toLowerCase();
+                let filteredEvents = allEvents;
+                if (selectedCollege !== "all") {
+                    filteredEvents = filteredEvents.filter(event => event.college === selectedCollege);
+                }
+                if (selectedGenre !== "all") {
+                    filteredEvents = filteredEvents.filter(event => event.genre === selectedGenre);
+                }
+                filteredEvents = filteredEvents.filter(event =>
+                    event.name.toLowerCase().includes(searchTerm) ||
+                    (event.genre && event.genre.toLowerCase().includes(searchTerm)) ||
+                    (event.college && event.college.toLowerCase().includes(searchTerm))
+                );
+                displayEvents(filteredEvents, selectedGenre, selectedCollege);
+            });
+        }
     });
+
+    function displayEvents(events, genre, college) {
+        const eventGrid = document.querySelector(".event-grid");
+        eventGrid.innerHTML = '';
+        let filteredEvents = [...events]; // Create a copy to avoid mutating the original
+        if (college !== "all") {
+            filteredEvents = filteredEvents.filter(event => event.college === college);
+        }
+        if (genre !== "all") {
+            filteredEvents = filteredEvents.filter(event => event.genre === genre);
+        }
+        if (filteredEvents.length > 0) {
+            filteredEvents.forEach(event => {
+                const tile = document.createElement("div");
+                tile.classList.add("event-tile");
+                tile.innerHTML = `
+                    <img src="${event.bannerUrl}" alt="${event.name}">
+                    <div class="event-info">
+                        <h3>${event.name}</h3>
+                        <p>${event.description || "Join us for an exciting event!"}</p>
+                        <p><strong>College:</strong> ${event.college}</p>
+                        <p><strong>Genre:</strong> ${event.genre || "General"}</p>
+                    </div>
+                `;
+                tile.addEventListener("click", () => {
+                    window.location.href = `event-details.html?id=${event.eventId}`;
+                });
+                eventGrid.appendChild(tile);
+            });
+        } else {
+            eventGrid.innerHTML = "<p>No events available.</p>";
+        }
+    }
 }
 
 // Event details page
@@ -261,7 +316,7 @@ if (document.querySelector(".profile")) {
                 if (bookings.length === 0) {
                     bookingsList.innerHTML = `<p>Welcome, ${username}! No bookings yet.</p>`;
                 } else {
-                    bookingsList.innerHTML = ""; // Clear previous content
+                    bookingsList.innerHTML = "";
 
                     bookings.forEach(booking => {
                         const item = document.createElement("div");
@@ -272,11 +327,9 @@ if (document.querySelector(".profile")) {
                             <p><strong>Ticket Price:</strong> $${booking.ticketPrice}</p>
                             <button class="cancel-btn" data-event-id="${booking.eventId}">Cancel Booking</button>
                         `;
-
                         bookingsList.appendChild(item);
                     });
 
-                    // Add event listeners to cancel buttons
                     document.querySelectorAll(".cancel-btn").forEach(button => {
                         button.addEventListener("click", (e) => {
                             const eventId = e.target.getAttribute("data-event-id");
@@ -298,6 +351,7 @@ document.addEventListener('DOMContentLoaded', () => {
         checkAdminAccess();
         loadEvents();
         setupAddEventForm();
+        setupEditForm();
     }
 });
 
@@ -336,6 +390,7 @@ function loadEvents() {
                         <h4>${event.name}</h4>
                         <p>Date: ${new Date(event.date).toLocaleDateString()}</p>
                         <p>Ticket Price: $${event.ticketPrice}</p>
+                        <p>College: ${event.college}</p>
                         <p>${event.description}</p>
                         <div class="registrations" id="registrations-${event.eventId}">
                             <h5>Registrations: <span>Loading...</span></h5>
@@ -349,7 +404,7 @@ function loadEvents() {
                     </div>
                 `;
                 eventsContainer.appendChild(eventItem);
-                loadRegistrations(event.eventId); // Load registrations for each event
+                loadRegistrations(event.eventId);
             });
         })
         .catch(error => console.error('Error fetching events:', error));
@@ -370,7 +425,7 @@ function loadRegistrations(eventId) {
 
             data.users.forEach(user => {
                 const li = document.createElement('li');
-                li.textContent = `Username: ${user.username}`;
+                li.textContent = `Username: ${user.username}, College: ${user.college}`;
                 ul.appendChild(li);
             });
         })
@@ -385,13 +440,14 @@ function setupAddEventForm() {
 
         const formData = new FormData(addEventForm);
         const eventData = {
-            eventId: Date.now().toString(), // Generate a unique eventId
+            eventId: Date.now().toString(),
             name: formData.get('name'),
             date: formData.get('date'),
             day: new Date(formData.get('date')).toLocaleDateString('en-US', { weekday: 'long' }),
             ticketPrice: parseFloat(formData.get('price')),
             teamSize: formData.get('teamSize') || "1",
             genre: formData.get('genre') || "General",
+            college: formData.get('college') || "Unknown",
             bannerUrl: formData.get('bannerUrl') || "https://via.placeholder.com/300x150",
             description: formData.get('description')
         };
@@ -405,98 +461,148 @@ function addEvent(eventData) {
     const username = localStorage.getItem('username');
     fetch(`http://localhost:3000/events?username=${username}`, {
         method: 'POST',
-        headers: {
-            'Content-Type': 'application/json'
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(eventData)
     })
-        .then(response => response.text())
-        .then(() => {
-            alert('Event added successfully!');
-            document.getElementById('add-event-form').reset();
-            loadEvents();
+        .then(response => {
+            if (response.ok) {
+                document.getElementById('add-event-form').reset();
+                loadEvents();
+                alert("Event added successfully!");
+            } else {
+                response.text().then(text => alert("Error adding event: " + text));
+            }
         })
         .catch(error => console.error('Error adding event:', error));
 }
 
+// Setup the Edit Event form
+function setupEditForm() {
+    const editForm = document.getElementById('edit-event-form');
+    editForm.addEventListener('submit', (e) => {
+        e.preventDefault();
+
+        const eventId = document.getElementById('edit-event-id').value;
+        if (!eventId) {
+            alert("Error: No event ID found for editing.");
+            return;
+        }
+
+        const eventData = {
+            eventId,
+            name: document.getElementById('edit-event-name').value.trim(),
+            date: document.getElementById('edit-event-date').value,
+            day: new Date(document.getElementById('edit-event-date').value).toLocaleDateString('en-US', { weekday: 'long' }),
+            ticketPrice: parseFloat(document.getElementById('edit-event-price').value) || 0,
+            teamSize: document.getElementById('edit-event-team-size').value.trim() || "1",
+            genre: document.getElementById('edit-event-genre').value.trim() || "General",
+            college: document.getElementById('edit-event-college').value.trim() || "Unknown",
+            bannerUrl: document.getElementById('edit-event-banner-url').value.trim() || "https://via.placeholder.com/300x150",
+            description: document.getElementById('edit-event-description').value.trim()
+        };
+
+        console.log("Sending update data:", eventData);
+        updateEvent(eventData);
+    });
+}
+
 // Edit an event
 function editEvent(eventId) {
+    console.log("Editing event with ID:", eventId);
     fetch(`http://localhost:3000/events`)
         .then(response => response.json())
         .then(events => {
             const event = events.find(e => e.eventId === eventId);
-            const newName = prompt('Enter new event name:', event.name);
-            const newDate = prompt('Enter new date (YYYY-MM-DD):', event.date.split('T')[0]);
-            const newPrice = prompt('Enter new ticket price:', event.ticketPrice);
-            const newTeamSize = prompt('Enter new team size:', event.teamSize);
-            const newGenre = prompt('Enter new genre:', event.genre);
-            const newBannerUrl = prompt('Enter new banner URL:', event.bannerUrl);
-            const newDescription = prompt('Enter new description:', event.description);
-
-            if (newName && newDate && newPrice && newTeamSize && newGenre && newBannerUrl && newDescription) {
-                const updatedEvent = {
-                    eventId: event.eventId,
-                    name: newName,
-                    date: newDate,
-                    day: new Date(newDate).toLocaleDateString('en-US', { weekday: 'long' }),
-                    ticketPrice: parseFloat(newPrice),
-                    teamSize: newTeamSize,
-                    genre: newGenre,
-                    bannerUrl: newBannerUrl,
-                    description: newDescription
-                };
-
-                const username = localStorage.getItem('username');
-                fetch(`http://localhost:3000/events?username=${username}`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify(updatedEvent)
-                })
-                    .then(() => {
-                        alert('Event updated successfully!');
-                        loadEvents();
-                    })
-                    .catch(error => console.error('Error updating event:', error));
+            if (event) {
+                console.log("Found event:", event);
+                document.getElementById('edit-event-id').value = event.eventId;
+                document.getElementById('edit-event-name').value = event.name;
+                document.getElementById('edit-event-date').value = event.date.split('T')[0];
+                document.getElementById('edit-event-price').value = event.ticketPrice;
+                document.getElementById('edit-event-team-size').value = event.teamSize;
+                document.getElementById('edit-event-genre').value = event.genre || "";
+                document.getElementById('edit-event-college').value = event.college || "";
+                document.getElementById('edit-event-banner-url').value = event.bannerUrl;
+                document.getElementById('edit-event-description').value = event.description || "";
+                document.getElementById('edit-form-container').style.display = 'block';
+            } else {
+                console.error("Event not found with ID:", eventId);
+                alert("Event not found.");
             }
         })
         .catch(error => console.error('Error fetching event:', error));
 }
 
+// Update an event
+function updateEvent(eventData) {
+    const username = localStorage.getItem('username');
+    fetch(`http://localhost:3000/events?username=${username}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(eventData)
+    })
+        .then(response => {
+            console.log("Update response status:", response.status);
+            if (response.ok) {
+                document.getElementById('edit-form-container').style.display = 'none';
+                loadEvents();
+                alert("Event updated successfully!");
+            } else {
+                response.text().then(text => {
+                    console.error("Update error response:", text);
+                    alert("Error updating event: " + text);
+                });
+            }
+        })
+        .catch(error => console.error('Error updating event:', error));
+}
+
+// Cancel edit
+function cancelEdit() {
+    document.getElementById('edit-form-container').style.display = 'none';
+    document.getElementById('edit-event-form').reset();
+}
+
 // Delete an event
 function deleteEvent(eventId) {
-    if (confirm('Are you sure you want to delete this event?')) {
+    if (window.confirm("Are you sure you want to delete this event?")) {
         const username = localStorage.getItem('username');
         fetch(`http://localhost:3000/events/${eventId}?username=${username}`, {
             method: 'DELETE'
         })
-            .then(() => {
-                alert('Event deleted successfully!');
-                loadEvents();
+            .then(response => {
+                if (response.ok) {
+                    loadEvents();
+                    alert("Event deleted successfully!");
+                } else {
+                    alert("Error deleting event");
+                }
             })
             .catch(error => console.error('Error deleting event:', error));
     }
 }
+
 function cancelBooking(eventId) {
     const username = localStorage.getItem("username");
 
     if (confirm("Are you sure you want to cancel this booking?")) {
-        fetch("http://localhost:3000/cancel-booking", {
+        console.log("Attempting to cancel booking for eventId:", eventId, "with username:", username);
+        fetch("http://localhost:3000/bookings/cancel", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify({ username, eventId })
         })
-            .then(response => response.text())
+            .then(response => {
+                console.log("Cancel booking response status:", response.status);
+                return response.text();
+            })
             .then(result => {
+                console.log("Cancel booking response text:", result);
                 if (result === "Booking canceled successfully") {
                     alert("Booking canceled successfully!");
-                    
-                    // Force full page reload
                     location.reload();
-                    
-                    // Alternative: Reload just the bookings list if you prefer a smooth update
-                    // loadBookings(); 
+                    // Alternative: Uncomment and use loadBookings() for smooth update
+                    // loadBookings();
                 } else {
                     alert(result);
                 }
@@ -507,72 +613,46 @@ function cancelBooking(eventId) {
             });
     }
 }
-// Fetch events from backend
-async function fetchEvents() {
-    try {
-        const response = await fetch("http://localhost:3000/events");
-        return await response.json();
-    } catch (err) {
-        console.error("Error fetching events:", err);
-        return [];
-    }
-}
 
-// Populate event grid with search and filter functionality
-if (document.querySelector(".event-grid")) {
-    let allEvents = [];
-    fetchEvents().then(events => {
-        allEvents = events; // Store all events for filtering
-        displayEvents(allEvents);
+// Optional: Add loadBookings function for smooth update
+function loadBookings() {
+    const username = localStorage.getItem("username");
+    const bookingsList = document.querySelector(".bookings-list");
 
-        // Search functionality
-        const searchInput = document.getElementById("event-search");
-        searchInput.addEventListener("input", () => {
-            const searchTerm = searchInput.value.toLowerCase();
-            const filteredEvents = allEvents.filter(event =>
-                event.name.toLowerCase().includes(searchTerm) ||
-                (event.genre && event.genre.toLowerCase().includes(searchTerm))
-            );
-            displayEvents(filteredEvents);
-        });
+    if (!username) {
+        bookingsList.innerHTML = "<p>Please login to see your bookings.</p>";
+    } else {
+        fetch(`http://localhost:3000/bookings/${username}`)
+            .then(response => response.json())
+            .then(bookings => {
+                if (bookings.length === 0) {
+                    bookingsList.innerHTML = `<p>Welcome, ${username}! No bookings yet.</p>`;
+                } else {
+                    bookingsList.innerHTML = "";
 
-        // Filter functionality
-        document.querySelectorAll(".filter-btn").forEach(btn => {
-            btn.addEventListener("click", () => {
-                const genre = btn.dataset.genre;
-                let filteredEvents = allEvents;
-                if (genre !== "all") {
-                    filteredEvents = allEvents.filter(e => e.genre === genre);
+                    bookings.forEach(booking => {
+                        const item = document.createElement("div");
+                        item.classList.add("booking-item");
+                        item.innerHTML = `
+                            <h3>${booking.eventName}</h3>
+                            <p><strong>Date:</strong> ${new Date(booking.date).toLocaleDateString()}</p>
+                            <p><strong>Ticket Price:</strong> $${booking.ticketPrice}</p>
+                            <button class="cancel-btn" data-event-id="${booking.eventId}">Cancel Booking</button>
+                        `;
+                        bookingsList.appendChild(item);
+                    });
+
+                    document.querySelectorAll(".cancel-btn").forEach(button => {
+                        button.addEventListener("click", (e) => {
+                            const eventId = e.target.getAttribute("data-event-id");
+                            cancelBooking(eventId);
+                        });
+                    });
                 }
-                const searchTerm = searchInput.value.toLowerCase();
-                if (searchTerm) {
-                    filteredEvents = filteredEvents.filter(event =>
-                        event.name.toLowerCase().includes(searchTerm) ||
-                        (event.genre && event.genre.toLowerCase().includes(searchTerm))
-                    );
-                }
-                displayEvents(filteredEvents);
+            })
+            .catch(err => {
+                console.error("Error fetching bookings:", err);
+                bookingsList.innerHTML = "<p>Error loading bookings.</p>";
             });
-        });
-    });
-
-    function displayEvents(events) {
-        const eventGrid = document.querySelector(".event-grid");
-        eventGrid.innerHTML = '';
-        events.forEach(event => {
-            const tile = document.createElement("div");
-            tile.classList.add("event-tile");
-            tile.innerHTML = `
-                <img src="${event.bannerUrl}" alt="${event.name}">
-                <div class="event-info">
-                    <h3>${event.name}</h3>
-                    <p>${event.description || "Join us for an exciting event!"}</p>
-                </div>
-            `;
-            tile.addEventListener("click", () => {
-                window.location.href = `event-details.html?id=${event.eventId}`;
-            });
-            eventGrid.appendChild(tile);
-        });
     }
 }
