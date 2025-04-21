@@ -656,3 +656,6 @@ function loadBookings() {
             });
     }
 }
+document.getElementById('heading').addEventListener('click', function() {
+    window.location.href = 'index.html';
+});

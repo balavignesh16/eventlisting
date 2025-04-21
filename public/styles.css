@@ -17,6 +17,8 @@
     --border-color: rgba(0, 0, 0, 0.08); /* Very light grey border */
     --overlay-opacity: 0.1;
     --booking-item-bg: #F1F8E9; /* Light Green 50 - Soft green-toned booking item background */
+    
+    
 }
 
 [data-theme="dark"] {
@@ -81,6 +83,10 @@ header h1 {
     font-weight: 700;
     color: #fff;
     letter-spacing: 1px;
+}
+#heading{
+    background-color: transparent;
+    border: transparent;
 }
 
 nav#nav-bar {
@@ -186,7 +192,6 @@ nav a:hover {
     animation: fadeInUp 1.2s ease-out;
 }
 
-/* Filters Section */
 .filters {
     background: var(--card-bg-secondary);
     backdrop-filter: blur(10px);
@@ -229,9 +234,15 @@ nav a:hover {
 }
 
 .filter-btn:hover {
-    background: var(--accent-teal);
+    background: var(--primary-dark); /* Use defined teal color */
+    color: #fff; /* Ensure text remains white for contrast */
     transform: translateY(-2px);
     box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+}
+
+.filter-btn.active {
+    background: var(--primary-dark);
+    color: #fff; /* Ensure active state text is readable */
 }
 
 /* Event Grid */
@@ -327,7 +338,7 @@ nav a:hover {
 }
 
 #book-btn:hover, #login-form button:hover, #register-form button:hover {
-    background: var(--accent-teal);
+    background: var(--primary-dark);
     transform: translateY(-2px);
     box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
 }
@@ -681,9 +692,6 @@ footer a:hover {
     
 }
 
-.filter-btn:hover {
-    background: var(--accent-orange);
-}
 .college-selector {
     display: flex;
     flex-direction: row;
@@ -733,13 +741,11 @@ footer a:hover {
 }
 
 .college-icon.active {
-    background-color: #007bff;
-    border-color: #0056b3;
-    color: white;
+    border-color: var(--primary-dark);
 }
 
 .college-icon.active:hover {
-    background-color: #0056b3;
+    background-color: var(--primary-light);
 }
 #edit-form-container {
     display: none; /* Controlled by JavaScript */
